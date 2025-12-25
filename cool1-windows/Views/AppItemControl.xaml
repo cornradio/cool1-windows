@@ -1,0 +1,88 @@
+<UserControl x:Class="Cool1Windows.Views.AppItemControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Cool1Windows.Views"
+             xmlns:converters="clr-namespace:Cool1Windows.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="400">
+    <UserControl.Resources>
+        <converters:PathToIconConverter x:Key="PathToIconConverter"/>
+        <converters:BooleanToBrushConverter x:Key="BoolToStarBrush" TrueBrush="Gold" FalseBrush="Gray"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        
+        <Style x:Key="RunButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource NotRunningBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource RunningBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="10" Background="{DynamicResource CardBackgroundBrush}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/> <!-- RUN Button -->
+                <ColumnDefinition Width="40"/>    <!-- Icon -->
+                <ColumnDefinition Width="*"/>     <!-- Info -->
+                <ColumnDefinition Width="Auto"/> <!-- Others -->
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="➤" FontSize="14" Command="{Binding DataContext.LaunchAppCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                    CommandParameter="{Binding}" Style="{StaticResource RunButtonStyle}"/>
+
+            <Grid Grid.Column="1">
+                <Image Source="{Binding Path, Converter={StaticResource PathToIconConverter}}" 
+                       Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Ellipse Width="8" Height="8" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                         Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="LimeGreen"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+            </Grid>
+
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
+                <TextBlock Text="{Binding Path}" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <Button Content="KILL" Command="{Binding DataContext.KillCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                        CommandParameter="{Binding}" Width="45" Height="25" Margin="2" 
+                        Background="{DynamicResource KillButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 
+                        Foreground="{DynamicResource KillButtonForegroundBrush}" ToolTip="Force Close"
+                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
+
+                <Button Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                        CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Margin="2" FontSize="20">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value="☆"/>
+                            <Setter Property="Foreground" Value="{DynamicResource StarInactiveBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                    <Setter Property="Content" Value="★"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource StarActiveBrush}"/>
+                                </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                
+                <Button Content="DEL" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                        CommandParameter="{Binding}" Width="45" Height="25" Margin="2" Background="{DynamicResource DeleteButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" Foreground="{DynamicResource DeleteButtonForegroundBrush}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
