@@ -16,6 +16,7 @@ namespace Cool1Windows.ViewModels
         private ObservableCollection<AppInfo> _history = new();
         private AppInfo? _selectedApp;
         private bool _showOnlyFavorites;
+        private bool _isEditMode;
         private string _sortMode = "最近启动"; // 默认排序模式
 
         public ObservableCollection<AppInfo> Apps
@@ -45,6 +46,12 @@ namespace Cool1Windows.ViewModels
             }
         }
 
+        public bool IsEditMode
+        {
+            get => _isEditMode;
+            set => SetProperty(ref _isEditMode, value);
+        }
+
         public string SortMode
         {
             get => _sortMode;
@@ -62,6 +69,8 @@ namespace Cool1Windows.ViewModels
         public ICommand KillCommand { get; }
         public ICommand SelectManualCommand { get; }
         public ICommand LaunchSelectedCommand { get; }
+        public ICommand OpenFolderCommand { get; }
+        public ICommand RunInTerminalCommand { get; }
 
         public MainViewModel()
         {
@@ -71,6 +80,8 @@ namespace Cool1Windows.ViewModels
             KillCommand = new RelayCommand(p => { if (p is AppInfo a) KillApp(a); });
             SelectManualCommand = new RelayCommand(_ => SelectAppManually());
             LaunchSelectedCommand = new RelayCommand(_ => { if (SelectedApp != null) LaunchApp(SelectedApp); }, _ => SelectedApp != null);
+            OpenFolderCommand = new RelayCommand(p => { if (p is AppInfo a) OpenFolder(a); });
+            RunInTerminalCommand = new RelayCommand(p => { if (p is AppInfo a) RunInTerminal(a); });
 
             LoadData();
 
@@ -300,6 +311,40 @@ namespace Cool1Windows.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine($"[Kill Command] ERROR: {ex.Message}");
+            }
+        }
+
+        private void OpenFolder(AppInfo app)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(app.Path)) return;
+                Process.Start("explorer.exe", $"/select,\"{app.Path}\"");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Main] Open Folder Failed: {ex.Message}");
+            }
+        }
+
+        private void RunInTerminal(AppInfo app)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(app.Path)) return;
+                string? dir = System.IO.Path.GetDirectoryName(app.Path);
+                if (string.IsNullOrEmpty(dir)) return;
+
+                // /k keeps the window open
+                string args = $"/k \"cd /d \"{dir}\" && \"{app.Path}\"\"";
+                Process.Start("cmd.exe", args);
+                
+                UpdateHistory(app);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Main] Run In Terminal Failed: {ex.Message}");
+                System.Windows.MessageBox.Show($"终端启动失败: {ex.Message}");
             }
         }
     }

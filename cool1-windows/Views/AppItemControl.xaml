@@ -36,7 +36,18 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" Content="➤" FontSize="14" Command="{Binding DataContext.LaunchAppCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                    CommandParameter="{Binding}" Style="{StaticResource RunButtonStyle}"/>
+                    CommandParameter="{Binding}" Style="{StaticResource RunButtonStyle}">
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="打开所在文件夹" 
+                                  Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                  CommandParameter="{Binding}"/>
+                        <MenuItem Header="在终端中运行" 
+                                  Command="{Binding DataContext.RunInTerminalCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                  CommandParameter="{Binding}"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
 
             <Grid Grid.Column="1">
                 <Image Source="{Binding Path, Converter={StaticResource PathToIconConverter}}" 
@@ -81,7 +92,10 @@
                 </Button>
                 
                 <Button Content="DEL" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                        CommandParameter="{Binding}" Width="45" Height="25" Margin="2" Background="{DynamicResource DeleteButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" Foreground="{DynamicResource DeleteButtonForegroundBrush}"/>
+                        CommandParameter="{Binding}" Width="45" Height="25" Margin="2" 
+                        Background="{DynamicResource DeleteButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 
+                        Foreground="{DynamicResource DeleteButtonForegroundBrush}"
+                        Visibility="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
             </StackPanel>
         </Grid>
     </Border>
