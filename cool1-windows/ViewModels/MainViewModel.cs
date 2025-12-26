@@ -319,7 +319,14 @@ namespace Cool1Windows.ViewModels
             try
             {
                 if (string.IsNullOrEmpty(app.Path)) return;
-                Process.Start("explorer.exe", $"/select,\"{app.Path}\"");
+                Console.WriteLine($"[Main] Open Folder: {app.Path}");
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{app.Path}\"",
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
             }
             catch (Exception ex)
             {
@@ -332,12 +339,23 @@ namespace Cool1Windows.ViewModels
             try
             {
                 if (string.IsNullOrEmpty(app.Path)) return;
-                string? dir = System.IO.Path.GetDirectoryName(app.Path);
+                
+                // 解析实际路径，确保 cd 到正确的目录并执行正确的 exe
+                string realPath = ShortcutService.ResolveShortcut(app.Path);
+                string? dir = System.IO.Path.GetDirectoryName(realPath);
                 if (string.IsNullOrEmpty(dir)) return;
 
+                Console.WriteLine($"[Main] Run In Terminal: {realPath} in {dir}");
+
                 // /k keeps the window open
-                string args = $"/k \"cd /d \"{dir}\" && \"{app.Path}\"\"";
-                Process.Start("cmd.exe", args);
+                string args = $"/k \"cd /d \"{dir}\" && \"{realPath}\"\"";
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = args,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
                 
                 UpdateHistory(app);
             }

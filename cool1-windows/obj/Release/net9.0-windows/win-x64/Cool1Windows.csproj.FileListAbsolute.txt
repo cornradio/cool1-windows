@@ -53,3 +53,4 @@ C:\Users\kasus\Documents\GitHub\cool1-windows\cool1-windows\obj\Release\net9.0-w
 C:\Users\kasus\Documents\GitHub\cool1-windows\cool1-windows\obj\Release\net9.0-windows\win-x64\Cool1Windows.pdb
 C:\Users\kasus\Documents\GitHub\cool1-windows\cool1-windows\obj\Release\net9.0-windows\win-x64\Cool1Windows.genruntimeconfig.cache
 C:\Users\kasus\Documents\GitHub\cool1-windows\cool1-windows\obj\Release\net9.0-windows\win-x64\ref\Cool1Windows.dll
+C:\Users\kasus\Documents\GitHub\cool1-windows\cool1-windows\obj\Release\net9.0-windows\win-x64\Cool1Windows.sourcelink.json

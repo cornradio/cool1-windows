@@ -7,11 +7,12 @@
 ![image](https://img.shields.io/badge/License-MIT-green.svg)
 ![image](https://img.shields.io/badge/Version-1.0.0-blue.svg)
 ## 功能
-- 程序快速启动和kill
+- 程序快速启动和杀掉
 - 程序管理和收藏
+- 打开程序所在目录、在终端运行（时候命令行程序）
 
 ## 下载
-在publish文件夹。或者自行 dotnet build
+在cool1-windows/publish文件夹。
 
 ## 图片
 ![image](image.png)

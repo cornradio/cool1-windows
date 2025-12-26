@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "9265kT35/J8=",
+  "dgSpecHash": "EfI4k4287Tw=",
   "success": true,
   "projectFilePath": "C:\\Users\\kasus\\Documents\\GitHub\\cool1-windows\\cool1-windows\\Cool1Windows.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\kasus\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.9\\microsoft.net.illink.tasks.9.0.9.nupkg.sha512"
+  ],
   "logs": []
 }
