@@ -91,9 +91,35 @@ namespace Cool1Windows.Views
                     TopIndicator.Visibility = Visibility.Collapsed;
                     BottomIndicator.Visibility = Visibility.Visible;
                 }
+
+                // Auto-scroll logic
+                var scrollViewer = FindParent<ScrollViewer>(this);
+                if (scrollViewer != null)
+                {
+                    WPoint mousePos = e.GetPosition(scrollViewer);
+                    double tolerance = 50;
+                    double scrollSpeed = 10;
+
+                    if (mousePos.Y < tolerance) // Near the top
+                    {
+                        scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - scrollSpeed);
+                    }
+                    else if (mousePos.Y > scrollViewer.ActualHeight - tolerance) // Near the bottom
+                    {
+                        scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset + scrollSpeed);
+                    }
+                }
                 
                 e.Handled = true;
             }
+        }
+
+        private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+            if (parentObject == null) return null;
+            if (parentObject is T parent) return parent;
+            return FindParent<T>(parentObject);
         }
 
         private void Border_DragLeave(object sender, WDragEventArgs e)
