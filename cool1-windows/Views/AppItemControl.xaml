@@ -94,6 +94,16 @@
                     </Button.Style>
                 </Button>
                 
+                <Button Content="↑" Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                        CommandParameter="{Binding}" Width="30" Height="25" Margin="2" 
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        Visibility="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
+                
+                <Button Content="↓" Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                        CommandParameter="{Binding}" Width="30" Height="25" Margin="2" 
+                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        Visibility="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
+
                 <Button Content="DEL" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
                         CommandParameter="{Binding}" Width="45" Height="25" Margin="2" 
                         Background="{DynamicResource DeleteButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 

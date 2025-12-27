@@ -16,8 +16,11 @@ namespace Cool1Windows.ViewModels
         private ObservableCollection<AppInfo> _history = new();
         private AppInfo? _selectedApp;
         private bool _showOnlyFavorites;
+        private string _sortMode = "手动排序"; // 默认排序模式
         private bool _isEditMode;
-        private string _sortMode = "最近启动"; // 默认排序模式
+
+        public ICommand MoveUpCommand { get; }
+        public ICommand MoveDownCommand { get; }
 
         public ObservableCollection<AppInfo> Apps
         {
@@ -57,8 +60,32 @@ namespace Cool1Windows.ViewModels
             get => _sortMode;
             set
             {
-                if (SetProperty(ref _sortMode, value)) RefreshDisplayedHistory();
+                if (SetProperty(ref _sortMode, value))
+                {
+                    OnPropertyChanged(nameof(IsSortByRecent));
+                    OnPropertyChanged(nameof(IsSortByName));
+                    OnPropertyChanged(nameof(IsSortByManual));
+                    RefreshDisplayedHistory();
+                }
             }
+        }
+
+        public bool IsSortByRecent
+        {
+            get => SortMode == "最近启动";
+            set { if (value) SortMode = "最近启动"; }
+        }
+
+        public bool IsSortByName
+        {
+            get => SortMode == "名称";
+            set { if (value) SortMode = "名称"; }
+        }
+
+        public bool IsSortByManual
+        {
+            get => SortMode == "手动排序";
+            set { if (value) SortMode = "手动排序"; }
         }
 
         public ObservableCollection<AppInfo> DisplayedHistory { get; } = new();
@@ -82,6 +109,8 @@ namespace Cool1Windows.ViewModels
             LaunchSelectedCommand = new RelayCommand(_ => { if (SelectedApp != null) LaunchApp(SelectedApp); }, _ => SelectedApp != null);
             OpenFolderCommand = new RelayCommand(p => { if (p is AppInfo a) OpenFolder(a); });
             RunInTerminalCommand = new RelayCommand(p => { if (p is AppInfo a) RunInTerminal(a); });
+            MoveUpCommand = new RelayCommand(p => { if (p is AppInfo a) MoveItem(a, -1); }, _ => SortMode == "手动排序");
+            MoveDownCommand = new RelayCommand(p => { if (p is AppInfo a) MoveItem(a, 1); }, _ => SortMode == "手动排序");
 
             LoadData();
 
@@ -154,16 +183,32 @@ namespace Cool1Windows.ViewModels
             {
                 query = query.OrderByDescending(a => a.LastLaunched ?? DateTime.MinValue).ThenBy(a => a.Name);
             }
-            else
+            else if (SortMode == "名称")
             {
                 query = query.OrderBy(a => a.Name);
             }
+            // "手动排序" 不需要 OrderBy，直接使用 History 的顺序
 
             DisplayedHistory.Clear();
             foreach (var app in query)
             {
                 DisplayedHistory.Add(app);
             }
+        }
+
+        private void MoveItem(AppInfo app, int direction)
+        {
+            int oldIndex = History.IndexOf(app);
+            if (oldIndex == -1) return;
+
+            int newIndex = oldIndex + direction;
+            if (newIndex < 0 || newIndex >= History.Count) return;
+
+            History.RemoveAt(oldIndex);
+            History.Insert(newIndex, app);
+
+            ConfigService.SaveHistory(History.ToList());
+            RefreshDisplayedHistory();
         }
 
         public void LaunchApp(AppInfo app)
