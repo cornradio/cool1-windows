@@ -16,11 +16,33 @@
             <Setter Property="Width" Value="45"/>
             <Setter Property="Height" Value="25"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource NotRunningBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{DynamicResource BorderBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="4" 
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsRunning}" Value="True">
                     <Setter Property="Background" Value="{DynamicResource RunningBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsRunning}" Value="False">
+                    <Setter Property="Background" Value="{DynamicResource NotRunningBrush}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -59,6 +81,10 @@
                         <MenuItem Header="在终端中运行" 
                                   Command="{Binding PlacementTarget.Tag.RunInTerminalCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
                                   CommandParameter="{Binding}"/>
+                        <Separator/>
+                        <MenuItem Header="删除" 
+                                  Command="{Binding PlacementTarget.Tag.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
+                                  CommandParameter="{Binding}"/>
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
@@ -85,20 +111,35 @@
                         Background="{DynamicResource KillButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 
                         Foreground="{DynamicResource KillButtonForegroundBrush}" ToolTip="Force Close"
                         Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
+
                 <Button Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                        CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Margin="2" FontSize="20">
+                        CommandParameter="{Binding}" Margin="2" FontSize="20">
                     <Button.Style>
                         <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
                             <Setter Property="Content" Value="☆"/>
                             <Setter Property="Foreground" Value="{DynamicResource StarInactiveBrush}"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                                            <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                     <Setter Property="Content" Value="★"/>
                                     <Setter Property="Foreground" Value="{DynamicResource StarActiveBrush}"/>
                                 </DataTrigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="0.7"/>
-                                </Trigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>

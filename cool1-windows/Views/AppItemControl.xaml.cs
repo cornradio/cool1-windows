@@ -37,7 +37,7 @@ namespace Cool1Windows.Views
 
             var window = System.Windows.Window.GetWindow(this);
             if (window != null && window.DataContext is MainViewModel vm && 
-                vm.IsEditMode && vm.SortMode == "手动排序")
+                vm.SortMode == "手动排序")
             {
                 _isReadyToDrag = true;
                 _startPoint = e.GetPosition(null);
