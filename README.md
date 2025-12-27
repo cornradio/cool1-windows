@@ -13,8 +13,10 @@
 - 其实不只是程序，也可也放文件夹、文档、图片等。这就是个临时窗口你想放啥他都支持！
 
 ## 下载
-在cool1-windows/publish文件夹。
+在publish文件夹。
+https://github.com/cornradio/cool1-windows/blob/master/cool1-windows/publish/Cool1Windows.exe
 
+## 帖子
 [cool1-windows 小众论坛帖子](https://meta.appinn.net/t/topic/79364)
 ## 图片
 ![image](image.png)
