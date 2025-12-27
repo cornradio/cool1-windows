@@ -13,6 +13,7 @@ namespace Cool1Windows.Models
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
         public string Path { get; set; } = string.Empty;
+        public string? Arguments { get; set; } // 存储启动参数
         public string? RealProcessName { get; set; } // 存储真正的进程名 (不含.exe)
 
         public bool IsFavorite

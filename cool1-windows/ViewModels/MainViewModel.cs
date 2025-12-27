@@ -121,21 +121,45 @@ namespace Cool1Windows.ViewModels
             try
             {
                 var processes = Process.GetProcesses();
-                var processNames = processes.Select(p => p.ProcessName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                
-                // 方案2所需的路径集合 (由于耗时，我们可以只拿一次)
-                // var processPaths = processes.Select(p => { try { return p.MainModule?.FileName; } catch { return null; } }).Where(x => x!=null).ToHashSet();
+                var processGroups = processes.GroupBy(p => p.ProcessName, StringComparer.OrdinalIgnoreCase)
+                                             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
                 foreach (var app in History)
                 {
                     bool isRunning = false;
-                    if (!string.IsNullOrEmpty(app.RealProcessName))
-                        isRunning = processNames.Contains(app.RealProcessName);
-                    
-                    if (!isRunning)
+                    string? targetProcName = app.RealProcessName;
+                    if (string.IsNullOrEmpty(targetProcName))
                     {
-                        var exeName = System.IO.Path.GetFileNameWithoutExtension(app.Path);
-                        isRunning = processNames.Contains(exeName);
+                        targetProcName = System.IO.Path.GetFileNameWithoutExtension(app.Path);
+                    }
+
+                    // Handle Chrome/Edge proxy launchers
+                    if (targetProcName.EndsWith("_proxy", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (targetProcName.StartsWith("chrome", StringComparison.OrdinalIgnoreCase)) targetProcName = "chrome";
+                        else if (targetProcName.StartsWith("msedge", StringComparison.OrdinalIgnoreCase)) targetProcName = "msedge";
+                    }
+
+                    if (processGroups.TryGetValue(targetProcName, out var procs))
+                    {
+                        // For browser-based apps, we need a more specific check than just "is chrome running"
+                        if (targetProcName.Equals("chrome", StringComparison.OrdinalIgnoreCase) || 
+                            targetProcName.Equals("msedge", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Heuristic: Check window titles for a match with app name
+                            isRunning = procs.Any(p => {
+                                try {
+                                    string title = p.MainWindowTitle;
+                                    return !string.IsNullOrEmpty(title) && 
+                                           (title.Contains(app.Name, StringComparison.OrdinalIgnoreCase) || 
+                                            app.Name.Contains(title, StringComparison.OrdinalIgnoreCase));
+                                } catch { return false; }
+                            });
+                        }
+                        else
+                        {
+                            isRunning = true;
+                        }
                     }
 
                     if (app.IsRunning != isRunning)
@@ -157,9 +181,12 @@ namespace Cool1Windows.ViewModels
             History = new ObservableCollection<AppInfo>(ConfigService.LoadHistory());
             foreach (var app in History)
             {
+                var detailed = ShortcutService.ResolveShortcutDetailed(app.Path);
+                string target = detailed.Path;
+                app.Arguments = detailed.Arguments;
+
                 if (string.IsNullOrEmpty(app.RealProcessName))
                 {
-                    string target = ShortcutService.ResolveShortcut(app.Path);
                     app.RealProcessName = System.IO.Path.GetFileNameWithoutExtension(target);
                 }
             }
@@ -222,7 +249,10 @@ namespace Cool1Windows.ViewModels
             try
             {
                 // 解析快捷方式
-                string realPath = ShortcutService.ResolveShortcut(app.Path);
+                var detailed = ShortcutService.ResolveShortcutDetailed(app.Path);
+                string realPath = detailed.Path;
+                app.Arguments = detailed.Arguments;
+
                 if (string.IsNullOrEmpty(app.RealProcessName))
                 {
                     app.RealProcessName = System.IO.Path.GetFileNameWithoutExtension(realPath);
@@ -313,22 +343,50 @@ namespace Cool1Windows.ViewModels
             Console.WriteLine($"[Kill Command] Target: {app.Name}, Path: {app.Path}");
             try
             {
-                var fileName = app.RealProcessName ?? System.IO.Path.GetFileNameWithoutExtension(app.Path);
-                Console.WriteLine($"[Kill Command] Target Name: {fileName}");
-                
-                // 方案1: 按进程名关闭
+                string? fileName = app.RealProcessName;
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    fileName = System.IO.Path.GetFileNameWithoutExtension(app.Path);
+                }
+
+                // Handle proxy
+                if (fileName.EndsWith("_proxy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (fileName.StartsWith("chrome", StringComparison.OrdinalIgnoreCase)) fileName = "chrome";
+                    else if (fileName.StartsWith("msedge", StringComparison.OrdinalIgnoreCase)) fileName = "msedge";
+                }
+
                 var processes = Process.GetProcessesByName(fileName);
-                Console.WriteLine($"[Kill Command] Processes found by name '{fileName}': {processes.Length}");
-                
                 bool killed = false;
+
                 foreach (var proc in processes)
                 {
                     try 
                     { 
-                        Console.WriteLine($"[Kill Command] Attempting to kill PID {proc.Id}...");
-                        proc.Kill(); 
-                        killed = true; 
-                        Console.WriteLine($"[Kill Command] PID {proc.Id} killed successfully.");
+                        bool match = false;
+                        // For browsers, only kill if the window title matches (to avoid killing the whole browser)
+                        if (fileName.Equals("chrome", StringComparison.OrdinalIgnoreCase) || 
+                            fileName.Equals("msedge", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string title = proc.MainWindowTitle;
+                            if (!string.IsNullOrEmpty(title) && 
+                                (title.Contains(app.Name, StringComparison.OrdinalIgnoreCase) || 
+                                 app.Name.Contains(title, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                match = true;
+                            }
+                        }
+                        else
+                        {
+                            match = true; // For regular apps, match by name is enough
+                        }
+
+                        if (match)
+                        {
+                            Console.WriteLine($"[Kill Command] Killing PID {proc.Id} ({proc.ProcessName})...");
+                            proc.Kill(); 
+                            killed = true; 
+                        }
                     } 
                     catch (Exception ex)
                     {
@@ -336,10 +394,9 @@ namespace Cool1Windows.ViewModels
                     }
                 }
 
-                // 方案2: 扫描所有进程，匹配主模块路径
-                if (!killed)
+                // Fallback: scanner path match (for non-browsers)
+                if (!killed && !fileName.Equals("chrome", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("[Kill Command] No processes killed by name, trying path match...");
                     foreach (var proc in Process.GetProcesses())
                     {
                         try
@@ -347,7 +404,6 @@ namespace Cool1Windows.ViewModels
                             if (proc.MainModule?.FileName != null && 
                                 string.Equals(proc.MainModule.FileName, app.Path, StringComparison.OrdinalIgnoreCase))
                             {
-                                Console.WriteLine($"[Kill Command] Path match found! PID {proc.Id}. Killing...");
                                 proc.Kill();
                                 killed = true;
                             }

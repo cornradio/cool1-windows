@@ -53,7 +53,7 @@
                     Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="打开所在文件夹" 
+                        <MenuItem Header="打开文件夹" 
                                   Command="{Binding PlacementTarget.Tag.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
                                   CommandParameter="{Binding}"/>
                         <MenuItem Header="在终端中运行" 
@@ -85,7 +85,6 @@
                         Background="{DynamicResource KillButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 
                         Foreground="{DynamicResource KillButtonForegroundBrush}" ToolTip="Force Close"
                         Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
-
                 <Button Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
                         CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Margin="2" FontSize="20">
                     <Button.Style>

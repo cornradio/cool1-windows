@@ -7,31 +7,33 @@ namespace Cool1Windows.Services
 {
     public static class ShortcutService
     {
-        public static string ResolveShortcut(string shortcutPath)
+        public static (string Path, string Arguments) ResolveShortcutDetailed(string shortcutPath)
         {
-            if (string.IsNullOrEmpty(shortcutPath) || !File.Exists(shortcutPath)) return shortcutPath;
-            if (!shortcutPath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase)) return shortcutPath;
+            if (string.IsNullOrEmpty(shortcutPath) || !File.Exists(shortcutPath)) return (shortcutPath, "");
+            if (!shortcutPath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase)) return (shortcutPath, "");
 
             try
             {
                 Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
-                if (shellType == null) return shortcutPath;
+                if (shellType == null) return (shortcutPath, "");
 
                 dynamic shell = Activator.CreateInstance(shellType)!;
                 var shortcut = shell.CreateShortcut(shortcutPath);
                 string target = shortcut.TargetPath;
+                string args = shortcut.Arguments;
                 
-                if (!string.IsNullOrEmpty(target))
-                {
-                    Console.WriteLine($"[Shortcut] Resolved '{shortcutPath}' -> '{target}'");
-                    return target;
-                }
+                return (target ?? shortcutPath, args ?? "");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Shortcut] Resolve Error: {ex.Message}");
             }
-            return shortcutPath;
+            return (shortcutPath, "");
+        }
+
+        public static string ResolveShortcut(string shortcutPath)
+        {
+            return ResolveShortcutDetailed(shortcutPath).Path;
         }
     }
 }
