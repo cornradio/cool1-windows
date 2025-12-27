@@ -19,8 +19,6 @@ namespace Cool1Windows.ViewModels
         private string _sortMode = "手动排序"; // 默认排序模式
         private bool _isEditMode;
 
-        public ICommand MoveUpCommand { get; }
-        public ICommand MoveDownCommand { get; }
 
         public ObservableCollection<AppInfo> Apps
         {
@@ -109,8 +107,6 @@ namespace Cool1Windows.ViewModels
             LaunchSelectedCommand = new RelayCommand(_ => { if (SelectedApp != null) LaunchApp(SelectedApp); }, _ => SelectedApp != null);
             OpenFolderCommand = new RelayCommand(p => { if (p is AppInfo a) OpenFolder(a); });
             RunInTerminalCommand = new RelayCommand(p => { if (p is AppInfo a) RunInTerminal(a); });
-            MoveUpCommand = new RelayCommand(p => { if (p is AppInfo a) MoveItem(a, -1); }, _ => SortMode == "手动排序");
-            MoveDownCommand = new RelayCommand(p => { if (p is AppInfo a) MoveItem(a, 1); }, _ => SortMode == "手动排序");
 
             LoadData();
 
@@ -196,20 +192,29 @@ namespace Cool1Windows.ViewModels
             }
         }
 
-        private void MoveItem(AppInfo app, int direction)
+        public void ReorderItemToPosition(AppInfo source, AppInfo target, bool isTop)
         {
-            int oldIndex = History.IndexOf(app);
-            if (oldIndex == -1) return;
+            if (SortMode != "手动排序") return;
 
-            int newIndex = oldIndex + direction;
-            if (newIndex < 0 || newIndex >= History.Count) return;
+            int oldIndex = History.IndexOf(source);
+            int targetIndex = History.IndexOf(target);
+            if (oldIndex == -1 || targetIndex == -1 || oldIndex == targetIndex) return;
 
             History.RemoveAt(oldIndex);
-            History.Insert(newIndex, app);
+            
+            // Recalculate target index after removing source
+            targetIndex = History.IndexOf(target);
+            int newIndex = isTop ? targetIndex : targetIndex + 1;
+            
+            if (newIndex < 0) newIndex = 0;
+            if (newIndex > History.Count) newIndex = History.Count;
+
+            History.Insert(newIndex, source);
 
             ConfigService.SaveHistory(History.ToList());
             RefreshDisplayedHistory();
         }
+
 
         public void LaunchApp(AppInfo app)
         {

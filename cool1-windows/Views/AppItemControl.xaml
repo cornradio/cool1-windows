@@ -26,7 +26,14 @@
         </Style>
     </UserControl.Resources>
     
-    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="10" Background="{DynamicResource CardBackgroundBrush}">
+    <Border x:Name="MainBorder" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="10" Background="{DynamicResource CardBackgroundBrush}"
+            AllowDrop="True" 
+            PreviewMouseLeftButtonDown="Border_PreviewMouseLeftButtonDown"
+            MouseLeftButtonUp="Border_MouseLeftButtonUp"
+            MouseMove="Border_MouseMove"
+            DragOver="Border_DragOver"
+            DragLeave="Border_DragLeave"
+            Drop="Border_Drop">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/> <!-- RUN Button -->
@@ -34,6 +41,10 @@
                 <ColumnDefinition Width="*"/>     <!-- Info -->
                 <ColumnDefinition Width="Auto"/> <!-- Others -->
             </Grid.ColumnDefinitions>
+
+            <!-- Drop Indicators -->
+            <Rectangle x:Name="TopIndicator" Grid.ColumnSpan="4" Fill="{DynamicResource AccentBrush}" Height="2" VerticalAlignment="Top" Margin="-10,-10,-10,0" Visibility="Collapsed"/>
+            <Rectangle x:Name="BottomIndicator" Grid.ColumnSpan="4" Fill="{DynamicResource AccentBrush}" Height="2" VerticalAlignment="Bottom" Margin="-10,0,-10,-10" Visibility="Collapsed"/>
 
             <Button Grid.Column="0" Content="➤" FontSize="14" 
                     Command="{Binding DataContext.LaunchAppCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
@@ -94,16 +105,6 @@
                     </Button.Style>
                 </Button>
                 
-                <Button Content="↑" Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                        CommandParameter="{Binding}" Width="30" Height="25" Margin="2" 
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                        Visibility="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
-                
-                <Button Content="↓" Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                        CommandParameter="{Binding}" Width="30" Height="25" Margin="2" 
-                        Background="{DynamicResource ButtonBackgroundBrush}" Foreground="{DynamicResource PrimaryTextBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                        Visibility="{Binding DataContext.IsEditMode, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
-
                 <Button Content="DEL" Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
                         CommandParameter="{Binding}" Width="45" Height="25" Margin="2" 
                         Background="{DynamicResource DeleteButtonBackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" 

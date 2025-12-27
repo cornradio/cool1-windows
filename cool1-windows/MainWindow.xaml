@@ -51,18 +51,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <ToggleButton IsChecked="{Binding IsEditMode}" Padding="10,2" Margin="0,0,5,0" ToolTip="Edit Mode">
-                    <ToggleButton.Style>
-                        <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-                            <Setter Property="Content" Value="✎"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ToggleButton.Style>
-                </ToggleButton>
+                <ToggleButton IsChecked="{Binding IsEditMode}" Padding="10,2" Margin="0,0,5,0" ToolTip="Edit Mode" Content="✎"/>
 
                 <ToggleButton IsChecked="{Binding ShowOnlyFavorites}" Padding="10,2" ToolTip="Favorites">
                     <ToggleButton.Style>
@@ -71,7 +60,6 @@
                             <Style.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter Property="Content" Value="★"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource StarActiveBrush}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
