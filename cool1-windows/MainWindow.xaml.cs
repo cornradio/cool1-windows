@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Cool1Windows.Services;
+using Cool1Windows.Models;
 
 namespace Cool1Windows;
 
@@ -20,6 +23,53 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = new ViewModels.MainViewModel();
+        
+        // 加载窗口设置
+        LoadWindowSettings();
+        
+        this.Closing += MainWindow_Closing;
+    }
+
+    private void LoadWindowSettings()
+    {
+        var settings = ConfigService.LoadWindowSettings();
+        if (settings != null)
+        {
+            this.Width = settings.Width;
+            this.Height = settings.Height;
+            
+            if (settings.Left != -1) this.Left = settings.Left;
+            if (settings.Top != -1) this.Top = settings.Top;
+            
+            if (settings.IsMaximized)
+            {
+                this.WindowState = WindowState.Maximized;
+            }
+        }
+    }
+
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        var settings = new WindowSettings();
+        
+        if (this.WindowState == WindowState.Maximized)
+        {
+            settings.IsMaximized = true;
+            settings.Width = this.RestoreBounds.Width;
+            settings.Height = this.RestoreBounds.Height;
+            settings.Left = this.RestoreBounds.Left;
+            settings.Top = this.RestoreBounds.Top;
+        }
+        else
+        {
+            settings.IsMaximized = false;
+            settings.Width = this.ActualWidth;
+            settings.Height = this.ActualHeight;
+            settings.Left = this.Left;
+            settings.Top = this.Top;
+        }
+
+        ConfigService.SaveWindowSettings(settings);
     }
 
     private void Grid_DragOver(object sender, System.Windows.DragEventArgs e)

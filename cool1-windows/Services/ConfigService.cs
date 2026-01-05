@@ -8,19 +8,25 @@ namespace Cool1Windows.Services
 {
     public class ConfigService
     {
-        private static readonly string ConfigPath = Path.Combine(
+        private static readonly string HistoryPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "Cool1Windows",
             "history.json"
+        );
+
+        private static readonly string WindowSettingsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Cool1Windows",
+            "window.json"
         );
 
         public static List<AppInfo> LoadHistory()
         {
             try
             {
-                if (File.Exists(ConfigPath))
+                if (File.Exists(HistoryPath))
                 {
-                    var json = File.ReadAllText(ConfigPath);
+                    var json = File.ReadAllText(HistoryPath);
                     return JsonSerializer.Deserialize<List<AppInfo>>(json) ?? new List<AppInfo>();
                 }
             }
@@ -35,15 +41,48 @@ namespace Cool1Windows.Services
         {
             try
             {
-                var dir = Path.GetDirectoryName(ConfigPath);
+                var dir = Path.GetDirectoryName(HistoryPath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir!);
 
                 var json = JsonSerializer.Serialize(history, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(ConfigPath, json);
+                File.WriteAllText(HistoryPath, json);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Save history failed: {ex.Message}");
+            }
+        }
+
+        public static WindowSettings LoadWindowSettings()
+        {
+            try
+            {
+                if (File.Exists(WindowSettingsPath))
+                {
+                    var json = File.ReadAllText(WindowSettingsPath);
+                    return JsonSerializer.Deserialize<WindowSettings>(json) ?? new WindowSettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load window settings failed: {ex.Message}");
+            }
+            return new WindowSettings();
+        }
+
+        public static void SaveWindowSettings(WindowSettings settings)
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(WindowSettingsPath);
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir!);
+
+                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(WindowSettingsPath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Save window settings failed: {ex.Message}");
             }
         }
     }
