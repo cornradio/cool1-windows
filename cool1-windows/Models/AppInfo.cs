@@ -53,5 +53,7 @@ namespace Cool1Windows.Models
         {
             return Path.GetHashCode();
         }
+
+        public override string ToString() => Name;
     }
 }

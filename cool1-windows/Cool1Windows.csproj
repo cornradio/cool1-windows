@@ -10,4 +10,8 @@
     <ApplicationIcon>fish.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.1" />
+  </ItemGroup>
+
 </Project>

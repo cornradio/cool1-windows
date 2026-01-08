@@ -18,6 +18,8 @@ namespace Cool1Windows.ViewModels
         private bool _showOnlyFavorites;
         private string _sortMode = "手动排序"; // 默认排序模式
         private bool _isEditMode;
+        private string _searchText = string.Empty;
+        public string Version => "Beta 2026.01.08";
 
 
         public ObservableCollection<AppInfo> Apps
@@ -53,6 +55,15 @@ namespace Cool1Windows.ViewModels
             set => SetProperty(ref _isEditMode, value);
         }
 
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value)) RefreshDisplayedHistory();
+            }
+        }
+
         public string SortMode
         {
             get => _sortMode;
@@ -70,14 +81,14 @@ namespace Cool1Windows.ViewModels
 
         public bool IsSortByRecent
         {
-            get => SortMode == "最近启动";
-            set { if (value) SortMode = "最近启动"; }
+            get => SortMode == "最近使用";
+            set { if (value) SortMode = "最近使用"; }
         }
 
         public bool IsSortByName
         {
-            get => SortMode == "名称";
-            set { if (value) SortMode = "名称"; }
+            get => SortMode == "名称排序";
+            set { if (value) SortMode = "名称排序"; }
         }
 
         public bool IsSortByManual
@@ -96,6 +107,8 @@ namespace Cool1Windows.ViewModels
         public ICommand LaunchSelectedCommand { get; }
         public ICommand OpenFolderCommand { get; }
         public ICommand RunInTerminalCommand { get; }
+        public ICommand ClearSearchCommand { get; }
+        public ICommand OpenGitHubCommand { get; }
 
         public MainViewModel()
         {
@@ -107,6 +120,10 @@ namespace Cool1Windows.ViewModels
             LaunchSelectedCommand = new RelayCommand(_ => { if (SelectedApp != null) LaunchApp(SelectedApp); }, _ => SelectedApp != null);
             OpenFolderCommand = new RelayCommand(p => { if (p is AppInfo a) OpenFolder(a); });
             RunInTerminalCommand = new RelayCommand(p => { if (p is AppInfo a) RunInTerminal(a); });
+            ClearSearchCommand = new RelayCommand(_ => SearchText = string.Empty);
+            OpenGitHubCommand = new RelayCommand(_ => {
+                Process.Start(new ProcessStartInfo("https://github.com/cornradio/cool1") { UseShellExecute = true });
+            });
 
             LoadData();
 
@@ -202,11 +219,16 @@ namespace Cool1Windows.ViewModels
                 query = query.Where(a => a.IsFavorite);
             }
 
-            if (SortMode == "最近启动")
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                query = query.Where(a => PinyinService.Match(a.Name, SearchText));
+            }
+
+            if (SortMode == "最近使用")
             {
                 query = query.OrderByDescending(a => a.LastLaunched ?? DateTime.MinValue).ThenBy(a => a.Name);
             }
-            else if (SortMode == "名称")
+            else if (SortMode == "名称排序")
             {
                 query = query.OrderBy(a => a.Name);
             }

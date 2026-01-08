@@ -45,6 +45,11 @@ public partial class MainWindow : Window
             {
                 this.WindowState = WindowState.Maximized;
             }
+
+            if (DataContext is ViewModels.MainViewModel vm && !string.IsNullOrEmpty(settings.SortMode))
+            {
+                vm.SortMode = settings.SortMode;
+            }
         }
     }
 
@@ -67,6 +72,11 @@ public partial class MainWindow : Window
             settings.Height = this.ActualHeight;
             settings.Left = this.Left;
             settings.Top = this.Top;
+        }
+
+        if (DataContext is ViewModels.MainViewModel vm)
+        {
+            settings.SortMode = vm.SortMode;
         }
 
         ConfigService.SaveWindowSettings(settings);
